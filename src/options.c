@@ -9820,7 +9820,7 @@ optfn_voice_engine(int optidx UNUSED, int req, boolean negated UNUSED,
         return optn_ok;
     }
     if (req == do_set) {
-        op = string_for_opt(opts, FALSE);
+        op = string_for_opt(opts, TRUE);
         if (op == empty_optstr)
             op = "";
         strncpy(flags.voice_engine, op, sizeof(flags.voice_engine) - 1);
@@ -9844,7 +9844,7 @@ optfn_voice_command(int optidx UNUSED, int req, boolean negated UNUSED,
         return optn_ok;
     }
     if (req == do_set) {
-        op = string_for_opt(opts, FALSE);
+        op = string_for_opt(opts, TRUE);
         if (op == empty_optstr)
             op = "";
         strncpy(flags.voice_command, op, sizeof(flags.voice_command) - 1);
