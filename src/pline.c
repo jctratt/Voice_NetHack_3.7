@@ -4,10 +4,14 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#ifdef VOICE_ENABLED
+#include "voinhack.h"
+#endif
 
-#define BIGBUFSZ (5 * BUFSZ) /* big enough to format a 4*BUFSZ string (from
-                              * config file parsing) with modest decoration;
-                              * result will then be truncated to BUFSZ-1 */
+#define BIGBUFSZ                                                \
+    (5 * BUFSZ) /* big enough to format a 4*BUFSZ string (from  \
+                 * config file parsing) with modest decoration; \
+                 * result will then be truncated to BUFSZ-1 */
 
 staticfn void putmesg(const char *);
 staticfn char *You_buf(int);
@@ -73,6 +77,10 @@ putmesg(const char *line)
         && (windowprocs.wincap2 & WC2_SUPPRESS_HIST) != 0)
         attr |= ATR_NOHISTORY;
     putstr(WIN_MESSAGE, attr, line);
+#ifdef VOICE_ENABLED
+    if (flags.voice_enabled)
+        handle_voice_output(line);
+#endif
     SoundSpeak(line);
 }
 
@@ -176,7 +184,8 @@ vpline(const char *line, va_list the_args)
 
         dirstr = coord_desc(a11y_mesgxy.x, a11y_mesgxy.y, dirstrbuf,
                             ((iflags.getpos_coords == GPCOORDS_NONE)
-                             ? GPCOORDS_COMFULL : iflags.getpos_coords));
+                                 ? GPCOORDS_COMFULL
+                                 : iflags.getpos_coords));
         tmp = (char *) alloc(strlen(line) + sizeof ": " + strlen(dirstr));
         Strcpy(tmp, dirstr);
         Strcat(tmp, ": ");
@@ -279,7 +288,7 @@ vpline(const char *line, va_list the_args)
     (void) strncpy(gp.prevmsg, line, BUFSZ), gp.prevmsg[BUFSZ - 1] = '\0';
     if (msgtyp == MSGTYP_STOP)
         display_nhwindow(WIN_MESSAGE, TRUE); /* --more-- */
- pline_done:
+pline_done:
 #ifdef SND_SPEECH
     /* clear the SPEECH flag so caller never has to */
     gp.pline_flags &= ~PLINE_SPEECH;
@@ -443,7 +452,7 @@ You_hear(const char *line, ...)
     else if (Unaware)
         YouPrefix(tmp, "You dream that you hear ", line);
     else
-        YouPrefix(tmp, "You hear ", line);  /* Deaf-aware */
+        YouPrefix(tmp, "You hear ", line); /* Deaf-aware */
     vpline(strcat(tmp, line), the_args);
     va_end(the_args);
 }
@@ -494,7 +503,7 @@ gamelog_add(long glflags, long gltime, const char *str)
     struct gamelog_line *tmp;
     struct gamelog_line *lst = gg.gamelog;
 
-    tmp = (struct gamelog_line *) alloc(sizeof (struct gamelog_line));
+    tmp = (struct gamelog_line *) alloc(sizeof(struct gamelog_line));
     tmp->turn = gltime;
     tmp->flags = glflags;
     tmp->text = dupstr(str);
@@ -525,15 +534,13 @@ livelog_printf(long ll_type, const char *line, ...)
 #else
 
 void
-gamelog_add(
-    long glflags UNUSED, long gltime UNUSED, const char *msg UNUSED)
+gamelog_add(long glflags UNUSED, long gltime UNUSED, const char *msg UNUSED)
 {
     ; /* nothing here */
 }
 
 void
-livelog_printf(
-    long ll_type UNUSED, const char *line UNUSED, ...)
+livelog_printf(long ll_type UNUSED, const char *line UNUSED, ...)
 {
     ; /* nothing here */
 }
@@ -617,8 +624,8 @@ impossible(const char *s, ...)
 
 #ifdef CRASHREPORT
     if (sysopt.crashreporturl) {
-        boolean report = ('y' == yn_function("Report now?", ynchars,
-                                             'n', FALSE));
+        boolean report =
+            ('y' == yn_function("Report now?", ynchars, 'n', FALSE));
 
         raw_print(""); /* prove to the user the character was accepted */
         if (report) {
@@ -655,7 +662,8 @@ execplinehandler(const char *line)
         (void) setuid(getuid());
         (void) execv(args[0], (char *const *) args);
         perror((char *) 0);
-        (void) fprintf(stderr, "Exec to message handler %s failed.\n", sysopt.msghandler);
+        (void) fprintf(stderr, "Exec to message handler %s failed.\n",
+                       sysopt.msghandler);
         nh_terminate(EXIT_FAILURE);
     } else if (f > 0) {
         int status;
@@ -673,7 +681,7 @@ execplinehandler(const char *line)
         args[1] = line;
         args[2] = NULL;
         ret = _spawnv(_P_NOWAIT, sysopt.msghandler, args);
-        nhUse(ret);  /* -Wunused-but-set-variable */
+        nhUse(ret); /* -Wunused-but-set-variable */
     }
 #else
     use_pline_handler = FALSE;
@@ -701,7 +709,7 @@ config_error_add(const char *str, ...)
 
 staticfn void
 vconfig_error_add(const char *str, va_list the_args)
-{       /* start of vconf...() or of nested block in USE_OLDARG's conf...() */
+{ /* start of vconf...() or of nested block in USE_OLDARG's conf...() */
     int vlen = 0;
     char buf[BIGBUFSZ]; /* will be chopped down to BUFSZ-1 if longer */
 
@@ -746,8 +754,8 @@ nhassert_failed(const char *expression, const char *filepath, int line)
         filename = p + 1;
 #endif
 
-    impossible("nhassert(%s) failed in file '%s' at line %d",
-               expression, filename, line);
+    impossible("nhassert(%s) failed in file '%s' at line %d", expression,
+               filename, line);
 }
 
 /*pline.c*/

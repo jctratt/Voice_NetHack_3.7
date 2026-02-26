@@ -1,0 +1,42 @@
+# NetHack Voice Engine Integration
+
+This branch introduces an experimental, PCRE2-based Voice Engine for NetHack 3.7. It allows regex-based matching of game events (like messages) to trigger spoken audio output natively via cross-platform shell commands (`espeak`, `say`, etc.).
+
+## Prerequisites
+To compile with the Voice Engine enabled, you must have the `pcre2` library installed on your system.
+* **Ubuntu/Debian**: `sudo apt install libpcre2-dev`
+* **macOS**: `brew install pcre2`
+* **Windows**: Install PCRE2 via MSYS2 or vcpkg.
+
+## How to Enable
+
+By default, the Voice Engine is disabled to preserve upstream vanilla behavior. To enable it for your build:
+
+### Method 1: Modify `config.h` (Recommended)
+Open `include/config.h`, locate `Section 4: EXPERIMENTAL STUFF`, and uncomment the following line:
+```c
+#define VOICE_ENABLED
+```
+
+### Method 2: CFLAGS in `hints` File
+Add the `-DVOICE_ENABLED` flag to the `CFLAGS` assignment in your operating system's hints file (e.g., `sys/unix/hints/linux.370`).
+
+## Configuration
+Once compiled, you can customize the Voice Engine in your `.nethackrc` or `sysconf`.
+
+Example `~/.nethackrc` configurations:
+
+```
+OPTIONS=voice_engine:
+OPTIONS=voice_command:-v en-us -s 175
+VOICE_EXCEPTION=^You feel%b+more%b+confident
+VOICE_FORCE=^You hear a%b+slow%b+chugging=>chug chug chug.
+```
+
+- `voice_engine`: The binary used to pipe strings into an external process. Leave blank (or omit) to default to `espeak` directly, or `cmd /c` on Windows, or `say` on Mac.
+- `voice_command`: The arguments passed to your voice program. For `espeak`, you could pass `-s 175` for speed.
+- `VOICE_EXCEPTION`: A PCRE2 regex. If the game message matches this regex, the voice engine will silently skip speaking it.
+- `VOICE_FORCE`: A PCRE2 regex mapping. Use `=>` to separate the regex from the spoken word. If a game message matches the regex, the voice engine will only say the string provided on the right side of the `=>`.
+
+## Architecture Details
+The voice engine parses messages inside `src/pline.c` and processes regex validations against them. Spoken audio is launched asynchronously inside a `system()` subshell to avoid blocking NetHack's main loop. To prevent voices from overlapping dynamically, the sub-engine leverages `flock` on Linux to enforce an execution queue natively. No persistent background daemon is required.

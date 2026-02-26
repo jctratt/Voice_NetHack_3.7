@@ -405,6 +405,8 @@ WINCURSESLIB = -lncurses
 # LIBS = -lz
 #
 # LIBS =
+LIBS = -lpcre2-8
+
 
 # make NetHack
 GAME     = nethack
@@ -523,7 +525,8 @@ HACKCSRC = allmain.c alloc.c apply.c artifact.c attrib.c ball.c bones.c \
 	   strutil.c symbols.c sys.c teleport.c \
 	   timeout.c topten.c track.c trap.c u_init.c utf8map.c \
 	   uhitm.c vault.c version.c vision.c weapon.c were.c wield.c \
-	   windows.c wizard.c wizcmds.c worm.c worn.c write.c zap.c
+	   windows.c voinhack.c wizard.c wizcmds.c worm.c worn.c write.c zap.c
+
 
 # all operating-system-dependent .c (for dependencies and such)
 SYSCSRC = ../sys/share/pcmain.c ../sys/share/pcsys.c \
@@ -622,6 +625,7 @@ HOBJ = $(TARGETPFX)allmain.o $(TARGETPFX)alloc.o \
 	$(TARGETPFX)were.o $(TARGETPFX)wield.o $(TARGETPFX)windows.o \
 	$(TARGETPFX)wizard.o $(TARGETPFX)wizcmds.o $(TARGETPFX)worm.o \
 	$(TARGETPFX)worn.o $(TARGETPFX)write.o $(TARGETPFX)zap.o \
+	$(TARGETPFX)voinhack.o \
 	$(REGEXOBJ) $(RANDOBJ) $(SYSOBJ) $(WINOBJ) $(HINTOBJ) $(SNDLIBOBJ) \
 	$(TARGETPFX)version.o 
 

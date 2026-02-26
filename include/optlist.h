@@ -21,10 +21,18 @@ enum Y_N { No, Yes };
 enum Off_On { Off, On };
 /* Advanced options are only shown in the full, traditional options menu */
 enum OptSection {
-    OptS_General, OptS_Behavior, OptS_Map, OptS_Status, OptS_Advanced
+    OptS_General,
+    OptS_Behavior,
+    OptS_Map,
+    OptS_Status,
+    OptS_Advanced
 };
 enum menu_terminology_preference {
-    Term_False, Term_Off, Term_Disabled, Term_Excluded, num_terms
+    Term_False,
+    Term_Off,
+    Term_Disabled,
+    Term_Excluded,
+    num_terms
 };
 
 struct allopt_t {
@@ -798,6 +806,19 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(verbose, Advanced, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &flags.verbose, Term_False,
            (char *)0)
+#ifdef VOICE_ENABLED
+    NHOPTB(voice_enabled, Advanced, 0, opt_out, set_in_game,
+           Off, Yes, No, No, NoAlias, &flags.voice_enabled, Term_False,
+           "speak messages using espeak")
+    NHOPTC(voice_command, Advanced, BUFSZ, opt_in, set_in_game,
+                No, Yes, No, No, NoAlias,
+                "arguments for the voice command")
+    NHOPTC(voice_engine, Advanced, BUFSZ, opt_in, set_in_game,
+                No, Yes, No, No, NoAlias,
+                "executable for the voice engine")
+#endif
+
+
     NHOPTC(versinfo, Advanced, 80, opt_out, set_in_game,
            No, Yes, No, Yes, NoAlias, "extra information for 'showvers'")
 #ifdef MSDOS

@@ -3,7 +3,8 @@
 /*-Copyright (c) Robert Patrick Rankin, 2016. */
 /* NetHack may be freely redistributed.  See license for details. */
 
-#ifndef CONFIG_H /* make sure the compiler does not see the typedefs twice */
+#ifndef CONFIG_H /* make sure the compiler does not see the typedefs twice \
+                  */
 #define CONFIG_H
 
 /*
@@ -47,7 +48,6 @@
 #include "patchlevel.h"
 #endif
 
-
 /* Windowing systems...
  * Define all of those you want supported in your binary.
  * Some combinations make no sense.  See the installation document.
@@ -55,10 +55,10 @@
 #if !defined(NOTTYGRAPHICS)
 #define TTY_GRAPHICS /* good old tty-based graphics */
 #endif
-/* #define CURSES_GRAPHICS *//* Curses interface - Karl Garrison*/
-/* #define X11_GRAPHICS */   /* X11 interface */
-/* #define QT_GRAPHICS */    /* Qt interface */
-/* #define MSWIN_GRAPHICS */ /* Windows NT, CE, Graphics */
+/* #define CURSES_GRAPHICS */ /* Curses interface - Karl Garrison*/
+/* #define X11_GRAPHICS */    /* X11 interface */
+/* #define QT_GRAPHICS */     /* Qt interface */
+/* #define MSWIN_GRAPHICS */  /* Windows NT, CE, Graphics */
 
 /*
  * Define the default window system.  This should be one that is compiled
@@ -96,11 +96,11 @@
 
 #ifdef QT_GRAPHICS
 #ifndef DEFAULT_WC_TILED_MAP
-#define DEFAULT_WC_TILED_MAP /* Default to tiles if users doesn't request
+#define DEFAULT_WC_TILED_MAP /* Default to tiles if users doesn't request \
                               * wc_ascii_map */
 #endif
 #ifndef USE_XPM
-#define USE_XPM           /* Use XPM format for images (required) */
+#define USE_XPM /* Use XPM format for images (required) */
 #endif
 #ifndef GRAPHIC_TOMBSTONE
 #define GRAPHIC_TOMBSTONE /* Use graphical tombstone (rip.ppm) */
@@ -112,7 +112,7 @@
 
 #ifdef GNOME_GRAPHICS
 #ifndef USE_XPM
-#define USE_XPM           /* Use XPM format for images (required) */
+#define USE_XPM /* Use XPM format for images (required) */
 #endif
 #ifndef GRAPHIC_TOMBSTONE
 #define GRAPHIC_TOMBSTONE /* Use graphical tombstone (rip.ppm) */
@@ -198,8 +198,8 @@
  *              ENTRYMAX     (max entries in the record file)
  *              POINTSMIN    (min points to get an entry)
  *              PERS_IS_UID  (0 or 1 - person is name or (numeric) userid)
- *            Can force incubi/succubi behavior to be toned down to nymph-like:
- *              SEDUCE       (0 or 1 - runtime disable/enable SEDUCE option)
+ *            Can force incubi/succubi behavior to be toned down to
+ * nymph-like: SEDUCE       (0 or 1 - runtime disable/enable SEDUCE option)
  *            Can hide the entry for displaying command line usage from
  *            the help menu if players don't have access to command lines:
  *              HIDEUSAGE    (0 or 1 - runtime show/hide command line usage)
@@ -224,7 +224,7 @@
  *              default is 'sysconf' in nethack's playground.
  */
 
-#ifndef WIZARD_NAME /* allow for compile-time or Makefile changes */
+#ifndef WIZARD_NAME          /* allow for compile-time or Makefile changes */
 #define WIZARD_NAME "wizard" /* value is ignored if SYSCF is enabled */
 #endif
 
@@ -241,65 +241,65 @@
 #endif
 
 #ifndef NOCRASHREPORT
-# ifndef CRASHREPORT
-#  ifdef MACOS
-#   define CRASHREPORT "/usr/bin/open"
-#  endif
-#  ifdef __linux__
-#   define CRASHREPORT "/usr/bin/xdg-open"
-       /* Define this if the terminal is filled with useless error messages
-        * when the browser launches. */
-#   define CRASHREPORT_EXEC_NOSTDERR
-#  endif
-#  ifdef WIN32
-#   define CRASHREPORT /* builtin helper */
-#  endif
-# endif
+#ifndef CRASHREPORT
+#ifdef MACOS
+#define CRASHREPORT "/usr/bin/open"
+#endif
+#ifdef __linux__
+#define CRASHREPORT "/usr/bin/xdg-open"
+/* Define this if the terminal is filled with useless error messages
+ * when the browser launches. */
+#define CRASHREPORT_EXEC_NOSTDERR
+#endif
+#ifdef WIN32
+#define CRASHREPORT /* builtin helper */
+#endif
+#endif
 #else
-# ifdef CRASHREPORT
-#  undef CRASHREPORT
-# endif
-# ifdef MSDOS
-#  undef PANICTRACE
-# endif
+#ifdef CRASHREPORT
+#undef CRASHREPORT
+#endif
+#ifdef MSDOS
+#undef PANICTRACE
+#endif
 #endif
 
 #ifdef CRASHREPORT
-# ifndef DUMPLOG_CORE
-#  define DUMPLOG_CORE     // required to get ^P info
-# endif
-# ifdef MACOS
-#  define PANICTRACE
-# endif
-# ifdef __linux__
-#  define PANICTRACE
-#  ifndef NOSTATICFN	   // may be defined on command line
-#   define NOSTATICFN
-#  endif
-# endif
+#ifndef DUMPLOG_CORE
+#define DUMPLOG_CORE // required to get ^P info
+#endif
+#ifdef MACOS
+#define PANICTRACE
+#endif
+#ifdef __linux__
+#define PANICTRACE
+#ifndef NOSTATICFN // may be defined on command line
+#define NOSTATICFN
+#endif
+#endif
 // This test isn't quite right: CNG is only available from Windows 2000 on.
 // But we'll check that at runtime.
-# ifdef WIN32
-#  define PANICTRACE
-#  define NOSTATICFN
-# endif
+#ifdef WIN32
+#define PANICTRACE
+#define NOSTATICFN
+#endif
 #endif
 
 #ifdef NONOSTATICFN
-# define staticfn static
+#define staticfn static
 #else
-# ifdef NOSTATICFN
-#  define staticfn
-# else
-#  define staticfn static
-# endif
+#ifdef NOSTATICFN
+#define staticfn
+#else
+#define staticfn static
+#endif
 #endif
 
 /* note: "larger" is in comparison with 'record', the high-scores file
    (whose name can be overridden via #define in global.h if desired) */
-#define LOGFILE  "logfile"  /* larger file for debugging purposes */
+#define LOGFILE "logfile"   /* larger file for debugging purposes */
 #define XLOGFILE "xlogfile" /* even larger logfile */
-#define NEWS     "news"     /* the file containing the latest hack news */
+#define NEWS "news"         /* the file containing the latest hack news */
 #define PANICLOG "paniclog" /* log of panic and impossible events */
 
 /* alternative paniclog format, better suited for public servers with
@@ -347,14 +347,13 @@
 
 /*
  *      NODUMPENUMS
- *      If there are memory constraints and you don't want to store information
- *      about the internal enum values for monsters and objects, this can be
- *      uncommented to define NODUMPENUMS. Doing so will disable the
- *          nethack --dumpenums
- *      command line option.
- *      Note:  the extra memory is also used when ENHANCED_SYMBOLS is
- *      defined, so defining both ENHANCED_SYMBOLS and NODUMPENUMS will limit
- *      the amount of memory and code reduction offered by the latter.
+ *      If there are memory constraints and you don't want to store
+ * information about the internal enum values for monsters and objects, this
+ * can be uncommented to define NODUMPENUMS. Doing so will disable the nethack
+ * --dumpenums command line option. Note:  the extra memory is also used when
+ * ENHANCED_SYMBOLS is defined, so defining both ENHANCED_SYMBOLS and
+ * NODUMPENUMS will limit the amount of memory and code reduction offered by
+ * the latter.
  */
 /* #define NODUMPENUMS */
 
@@ -394,7 +393,7 @@
 #endif
 
 #ifndef COMPRESS
-/* # define ZLIB_COMP */            /* ZLIB for compression */
+/* # define ZLIB_COMP */ /* ZLIB for compression */
 #endif
 
 /*
@@ -495,7 +494,6 @@
  */
 #endif /* CHDIR */
 
-
 /*
  * Section 3:   Definitions that may vary with system type.
  *              For example, both schar and uchar should be short ints on
@@ -575,7 +573,7 @@ typedef unsigned char uchar;
  *  FALSE: Show all errors as normal, with line numbers and context.
  */
 #ifndef CONFIG_ERROR_SECURE
-# define CONFIG_ERROR_SECURE TRUE
+#define CONFIG_ERROR_SECURE TRUE
 #endif
 
 /*
@@ -633,8 +631,9 @@ typedef unsigned char uchar;
  *
  * To compile NetHack with this, add tile.c to WINSRC and tile.o to WINOBJ in
  * the hints file or Makefile.  Set boolean option vt_tiledata and/or
- * vt_sounddata in your config file to turn either of these on.  Note that some
- * terminals (e.g. old versions of gnome-terminal) don't work with this. */
+ * vt_sounddata in your config file to turn either of these on.  Note that
+ * some terminals (e.g. old versions of gnome-terminal) don't work with this.
+ */
 /* #define TTY_TILES_ESCCODES */
 /* #define TTY_SOUND_ESCCODES */
 
@@ -644,23 +643,23 @@ typedef unsigned char uchar;
 
 /* enable status highlighting via STATUS_HILITE directives in run-time
    config file and the 'statushilites' option */
-#define STATUS_HILITES         /* support hilites of status fields */
+#define STATUS_HILITES /* support hilites of status fields */
 
-/* #define WINCHAIN */              /* stacked window systems */
+/* #define WINCHAIN */ /* stacked window systems */
 
 #if defined(DEBUG) && !defined(DEBUG_MIGRATING_MONS)
-#define DEBUG_MIGRATING_MONS  /* add a wizard-mode command to help debug
-                               * migrating monsters */
+#define DEBUG_MIGRATING_MONS /* add a wizard-mode command to help debug \
+                              * migrating monsters */
 #endif
 
 /* SCORE_ON_BOTL is neither experimental nor inadequately tested,
    but doesn't seem to fit in any other section... */
-/* #define SCORE_ON_BOTL */         /* enable the 'showscore' option to
-                                     * show estimated score on status line */
+/* #define SCORE_ON_BOTL */ /* enable the 'showscore' option to
+                             * show estimated score on status line */
 
 /* FREE_ALL_MEMORY is neither experimental nor inadequately tested,
    but it isn't necessary for successful operation of the program */
-#define FREE_ALL_MEMORY             /* free all memory at exit */
+#define FREE_ALL_MEMORY /* free all memory at exit */
 
 /* EXTRA_SANITY_CHECKS adds extra impossible calls,
  * probably not useful for normal play */
@@ -697,7 +696,7 @@ typedef unsigned char uchar;
 #undef LIVELOG
 #endif /* NO_CHRONICLE */
 
-/* #define DUMPLOG */  /* End-of-game dump logs */
+/* #define DUMPLOG */ /* End-of-game dump logs */
 
 #define USE_ISAAC64 /* Use cross-platform, bundled RNG */
 
@@ -707,17 +706,19 @@ typedef unsigned char uchar;
 
 #ifdef NHL_SANDBOX
 #ifdef CHRONICLE
-    /* LIVELOG (and therefore CHRONICLE)  is needed for --loglua */
+/* LIVELOG (and therefore CHRONICLE)  is needed for --loglua */
 #define LIVELOG
 #endif
 #endif
 
 /* End of Section 4 */
 
+/* #define VOICE_ENABLED */ /* Enable experimental Voice Engine via PCRE2 */
+
 #ifdef TTY_TILES_ESCCODES
-# ifndef TILES_IN_GLYPHMAP
-#  define TILES_IN_GLYPHMAP
-# endif
+#ifndef TILES_IN_GLYPHMAP
+#define TILES_IN_GLYPHMAP
+#endif
 #endif
 
 #include "cstd.h"
@@ -731,13 +732,13 @@ typedef unsigned char uchar;
 #ifdef LIVELOG
 #ifndef LIVELOGFILE
 #define LIVELOGFILE "livelog" /* in-game events recorded, live */
-#endif /* LIVELOGFILE */
-#endif /* LIVELOG */
+#endif                        /* LIVELOGFILE */
+#endif                        /* LIVELOG */
 
 #ifdef DUMPLOG
 #define DUMPLOG_CORE
 #ifndef DUMPLOG_FILE
-#define DUMPLOG_FILE        "/tmp/nethack.%n.%d.log"
+#define DUMPLOG_FILE "/tmp/nethack.%n.%d.log"
 /* DUMPLOG_FILE allows following placeholders:
    %% literal '%'
    %v version (eg. "3.6.3-0")
@@ -754,7 +755,7 @@ typedef unsigned char uchar;
 #endif /* DUMPLOG */
 #ifdef DUMPLOG_CORE
 #ifndef DUMPLOG_MSG_COUNT
-#define DUMPLOG_MSG_COUNT   50
+#define DUMPLOG_MSG_COUNT 50
 #endif /* DUMPLOG_MSG_COUNT */
 #endif
 
