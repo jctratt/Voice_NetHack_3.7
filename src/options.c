@@ -9821,10 +9821,12 @@ optfn_voice_engine(int optidx UNUSED, int req, boolean negated UNUSED,
     }
     if (req == do_set) {
         op = string_for_opt(opts, TRUE);
-        if (op == empty_optstr)
-            op = "";
-        strncpy(flags.voice_engine, op, sizeof(flags.voice_engine) - 1);
-        flags.voice_engine[sizeof(flags.voice_engine) - 1] = '\0';
+        if (op == empty_optstr) {
+            flags.voice_engine[0] = '\0';
+        } else {
+            strncpy(flags.voice_engine, op, sizeof(flags.voice_engine) - 1);
+            flags.voice_engine[sizeof(flags.voice_engine) - 1] = '\0';
+        }
         return optn_ok;
     }
     if (req == get_val || req == get_cnf_val) {
@@ -9845,10 +9847,12 @@ optfn_voice_command(int optidx UNUSED, int req, boolean negated UNUSED,
     }
     if (req == do_set) {
         op = string_for_opt(opts, TRUE);
-        if (op == empty_optstr)
-            op = "";
-        strncpy(flags.voice_command, op, sizeof(flags.voice_command) - 1);
-        flags.voice_command[sizeof(flags.voice_command) - 1] = '\0';
+        if (op == empty_optstr) {
+            flags.voice_command[0] = '\0';
+        } else {
+            strncpy(flags.voice_command, op, sizeof(flags.voice_command) - 1);
+            flags.voice_command[sizeof(flags.voice_command) - 1] = '\0';
+        }
         return optn_ok;
     }
     if (req == get_val || req == get_cnf_val) {
