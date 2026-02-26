@@ -6,6 +6,12 @@
 #include "voinhack.h"
 
 #include <ctype.h>
+#if defined(UNIX)
+#include <termios.h>
+#include <unistd.h>
+#elif defined(WIN32)
+#include <conio.h>
+#endif
 
 /* Global lists to store voice configuration data */
 struct voice_exception *voicelist = (struct voice_exception *) 0;
@@ -39,6 +45,7 @@ compile_re(const char *pattern)
  * will prevent the voice engine from speaking the associated message.
  * Returns 0 on success, non-zero on failure.
  */
+int
 add_voice_exception(const char *pattern)
 {
     struct voice_exception *newve;
@@ -60,6 +67,7 @@ add_voice_exception(const char *pattern)
  * that overrides what the voice engine speaks when a message is matched.
  * Supports PCRE2 backreferences ($1, \1, etc.) in the replacement text.
  */
+int
 add_voice_force(const char *pattern)
 {
     struct voice_force *newvf;
@@ -99,6 +107,7 @@ add_voice_force(const char *pattern)
  * free_voice_data: Cleans up all voice lists and compiled regex memory.
  * Called during game shutdown or reload.
  */
+void
 free_voice_data(void)
 {
     struct voice_exception *ve, *nextve;
@@ -127,6 +136,7 @@ free_voice_data(void)
  * strip_voice_patterns: Strips trailing UI hints (like "[ynq]" or "(n)")
  * and associated whitespace from game messages before processing for speech.
  */
+char *
 strip_voice_patterns(const char *message)
 {
     static char result[BUFSZ];
@@ -167,13 +177,30 @@ strip_voice_patterns(const char *message)
 }
 
 /**
+ * clear_voice_typeahead: Flushes the keyboard buffer to prevent accidental
+ * keystrokes from executing after a synchronous voice line finishes.
+ */
+static void
+clear_voice_typeahead(void)
+{
+#if defined(UNIX)
+    tcflush(STDIN_FILENO, TCIFLUSH);
+#elif defined(WIN32)
+    while (_kbhit()) {
+        (void) _getch();
+    }
+#endif
+}
+
+/**
  * handle_voice_output: Main entry point for voice processing.
  * 1. Checks VOICE_FORCE overrides.
  * 2. Checks VOICE_EXCEPTION silencers.
- * 3. Dispatches speech to the OS shell wrapper.
- * Uses a cross-platform approach: 'start /B' on Windows, 'say' on macOS,
- * and 'flock' on Linux to ensure serialized, non-overlapping speech.
+ * 3. Dispatches speech synchronously to the OS shell string.
+ * This execution is synchronous, intentionally pausing NetHack's game loop
+ * until the TTS program finishes, assisting screen-reader usability.
  */
+void
 handle_voice_output(const char *message)
 {
     char sayit[BUFSZ * 3];
@@ -224,33 +251,30 @@ handle_voice_output(const char *message)
             pcre2_match_data_free(match_data);
             if (flags.voice_engine[0]) {
 #if defined(WIN32)
-                snprintf(sayit, sizeof(sayit),
-                         "start /B cmd /c \"echo %s | %s %s\"", final_text,
-                         flags.voice_engine, flags.voice_command);
+                snprintf(sayit, sizeof(sayit), "cmd /c \"echo %s | %s %s\"",
+                         final_text, flags.voice_engine, flags.voice_command);
 #elif defined(__APPLE__)
-                snprintf(sayit, sizeof(sayit), "say \"%s\" &", final_text);
+                snprintf(sayit, sizeof(sayit), "say \"%s\"", final_text);
 #else
                 snprintf(sayit, sizeof(sayit),
-                         "( flock 9; printf \"%%s\" \"%s\" | %s %s ) "
-                         "9>/tmp/nethack_voice.lock &",
-                         final_text, flags.voice_engine, flags.voice_command);
+                         "printf \"%%s\" \"%s\" | %s %s", final_text,
+                         flags.voice_engine, flags.voice_command);
 #endif
             } else {
                 /* fallback to espeak if engine not set */
 #if defined(WIN32)
-                snprintf(sayit, sizeof(sayit), "start /B espeak %s \"%s\"",
+                snprintf(sayit, sizeof(sayit), "espeak %s \"%s\"",
                          flags.voice_command, final_text);
 #elif defined(__APPLE__)
-                snprintf(sayit, sizeof(sayit), "say %s \"%s\" &",
+                snprintf(sayit, sizeof(sayit), "say %s \"%s\"",
                          flags.voice_command, final_text);
 #else
-                snprintf(sayit, sizeof(sayit),
-                         "( flock 9; /usr/bin/espeak %s \"%s\" ) "
-                         "9>/tmp/nethack_voice.lock &",
+                snprintf(sayit, sizeof(sayit), "/usr/bin/espeak %s \"%s\"",
                          flags.voice_command, final_text);
 #endif
             }
             (void) system(sayit);
+            clear_voice_typeahead();
             return;
         }
         pcre2_match_data_free(match_data);
@@ -272,31 +296,28 @@ handle_voice_output(const char *message)
     /* 3. Default voice output */
     if (flags.voice_engine[0]) {
 #if defined(WIN32)
-        snprintf(sayit, sizeof(sayit), "start /B cmd /c \"echo %s | %s %s\"",
+        snprintf(sayit, sizeof(sayit), "cmd /c \"echo %s | %s %s\"",
                  escaped_message, flags.voice_engine, flags.voice_command);
 #elif defined(__APPLE__)
-        snprintf(sayit, sizeof(sayit), "say \"%s\" &", escaped_message);
+        snprintf(sayit, sizeof(sayit), "say \"%s\"", escaped_message);
 #else
-        snprintf(sayit, sizeof(sayit),
-                 "( flock 9; printf \"%%s\" \"%s\" | %s %s ) "
-                 "9>/tmp/nethack_voice.lock &",
+        snprintf(sayit, sizeof(sayit), "printf \"%%s\" \"%s\" | %s %s",
                  escaped_message, flags.voice_engine, flags.voice_command);
 #endif
     } else {
 #if defined(WIN32)
-        snprintf(sayit, sizeof(sayit), "start /B espeak %s \"%s\"",
+        snprintf(sayit, sizeof(sayit), "espeak %s \"%s\"",
                  flags.voice_command, escaped_message);
 #elif defined(__APPLE__)
-        snprintf(sayit, sizeof(sayit), "say %s \"%s\" &", flags.voice_command,
+        snprintf(sayit, sizeof(sayit), "say %s \"%s\"", flags.voice_command,
                  escaped_message);
 #else
-        snprintf(sayit, sizeof(sayit),
-                 "( flock 9; /usr/bin/espeak %s \"%s\" ) "
-                 "9>/tmp/nethack_voice.lock &",
+        snprintf(sayit, sizeof(sayit), "/usr/bin/espeak %s \"%s\"",
                  flags.voice_command, escaped_message);
 #endif
     }
     (void) system(sayit);
+    clear_voice_typeahead();
 }
 
 #endif /* VOICE_ENABLED */
